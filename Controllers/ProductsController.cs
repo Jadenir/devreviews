@@ -1,8 +1,9 @@
 using System.Collections.Generic;
-using System.Linq;
+using System.Threading.Tasks;
 using AutoMapper;
+using DevReviews.API.Entities;
 using DevReviews.API.Models;
-using DevReviews.API.Persistence;
+using DevReviews.API.Persistence.Repositories;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevReviews.API.Controllers
@@ -11,27 +12,28 @@ namespace DevReviews.API.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private readonly DevReviewsDbContext _dbContext;
+        private readonly IProductRepository _repository;
         private readonly IMapper _mapper;
-        public ProductsController(DevReviewsDbContext dbContext, IMapper mapper)
+        public ProductsController(IProductRepository repository, IMapper mapper)
         {
-            _dbContext = dbContext;
+            _repository = repository;
             _mapper = mapper;
         }
         //GET para api/products
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var products = _dbContext.Products;
+            var products = await _repository.GetAllAsync();
+
             var productsViewModel = _mapper.Map<List<ProductViewModel>>(products);
+
             return Ok(productsViewModel);
         }
         //GET para api/products/{id}
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            //Se não achar, retorna NotFound()
-            var product = _dbContext.Products.SingleOrDefault(p => p.Id == id);
+            var product = await _repository.GetDetailsByIdAsync(id);
             //Se for nulo retorna NotFound()
             if (product == null)
             {
@@ -42,22 +44,19 @@ namespace DevReviews.API.Controllers
         }
         //Post para api/products
         [HttpPost]
-        public IActionResult Post(AddProductInputModel model)
+        public async Task<IActionResult> Post(AddProductInputModel model)
         {
-            //Set tiver erros de validação, retornar BadRequest()
-            return CreatedAtAction(nameof(GetById), new { id = 1 }, model);
+            var product = new Product(model.Title, model.Desiption, model.Price);
+
+            await _repository.AddAsync(product);
+
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, model);
         }
         //Put para api/products/{id}
         [HttpPut("{id}")]
-        public IActionResult Put(int id, UpdateProductInputModel model)
+        public async Task<IActionResult> Put(int id, UpdateProductInputModel model)
         {
-            //Set tiver erros de validação, retornar BadRequest()
-            //Se não existir produto com id especificado, retornar NotFound()
-            if (model.Desiption.Length > 50)
-            {
-                return BadRequest();
-            }
-            var product = _dbContext.Products.SingleOrDefault(p => p.Id == id);
+            var product = await _repository.GetByIdAsync(id);
             //Se for nulo retorna NotFound()
             if (product == null)
             {
@@ -66,7 +65,9 @@ namespace DevReviews.API.Controllers
             //Atualiza dados
             product.Update(model.Desiption, model.Price);
 
+            await _repository.UpdateAsync(product);
+
             return NoContent();
         }
     }
-}
+};
