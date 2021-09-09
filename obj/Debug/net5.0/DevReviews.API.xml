@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>DevReviews.API</name>
+    </assembly>
+    <members>
+        <member name="M:DevReviews.API.Controllers.ProductsController.Post(DevReviews.API.Models.AddProductInputModel)">
+             <summary>Cadastro de Produto</summary>
+             <remarks>Requisição:
+             {
+             "title": "Um chinelo top"  ,
+             "description": "Um chienelo de marca", 
+             "price": 100
+             }
+            </remarks>
+             <param name="model">Obejgo com dados de cadastro de produto</param>
+             <returns>Objeto recém criado</returns>
+             <response code="201">Created</response>
+             <response code="400">Bad Request</response>
+        </member>
+        <member name="M:DevReviews.API.Controllers.ProductsController.Put(System.Int32,DevReviews.API.Models.UpdateProductInputModel)">
+            <summary>
+            
+            </summary>
+            <param name="id"></param>
+            <param name="model"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>
